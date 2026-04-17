@@ -132,26 +132,32 @@ function spin() {
   paid = false;
   document.getElementById("spinBtn").disabled = true;
 
-  // 🔥 SELALU ZONK
   let targetIndex = prizes.indexOf("Zonk");
 
-  // posisi panah atas
   let pointerAngle = (3 * Math.PI / 2);
   let targetAngle = pointerAngle - (targetIndex * arc) - (arc / 2);
 
-  let rotation = 0;
-  let speed = 0.3;
+  let duration = 5000; // 🔥 lama putaran (5 detik)
+  let start = null;
 
-  let anim = setInterval(() => {
-    rotation += speed;
-    startAngle += speed;
+  function animate(timestamp) {
+    if (!start) start = timestamp;
+    let progress = timestamp - start;
+
+    // 🔥 efek melambat (smooth)
+    let ease = 1 - Math.pow(1 - progress / duration, 3);
+
+    // 🔥 jumlah putaran (semakin besar makin lama muter)
+    let totalRotation = 12 * Math.PI;
+
+    startAngle = ease * totalRotation;
 
     ctx.clearRect(0, 0, 300, 300);
     drawWheel();
 
-    if (rotation >= 4) {
-      clearInterval(anim);
-
+    if (progress < duration) {
+      requestAnimationFrame(animate);
+    } else {
       startAngle = targetAngle % (Math.PI * 2);
 
       ctx.clearRect(0, 0, 300, 300);
@@ -164,7 +170,9 @@ function spin() {
 
       document.getElementById("status").innerText = "Status: Selesai";
     }
-  }, 20);
+  }
+
+  requestAnimationFrame(animate);
 }
 </script>
 
