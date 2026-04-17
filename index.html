@@ -60,8 +60,16 @@ button {
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 
-const prizes = ["Zonk","RP.5.000","RP.10.000"];
-const colors = ["red","green","blue"];
+const prizes = [
+  "WAHYU",
+  "RP.20.000",
+  "RP.5.000",
+  "RP.30.000",
+  "RP.50.000",
+  "Zonk"
+];
+
+const colors = ["red","blue","green","orange","purple","pink"];
 
 let startAngle = 0;
 let spinning = false;
@@ -81,7 +89,7 @@ function drawWheel() {
     ctx.translate(150,150);
     ctx.rotate(startAngle+i*arc+arc/2);
     ctx.fillStyle="#fff";
-    ctx.font="14px Arial";
+    ctx.font="12px Arial";
     ctx.fillText(prizes[i],40,0);
     ctx.restore();
   }
@@ -89,13 +97,14 @@ function drawWheel() {
 
 drawWheel();
 
-function getResultIndex() {
+// 🔥 POLA
+function getTargetIndex() {
   let cycle = spinCount % 12;
 
-  if (cycle < 5) return 0; // zonk
-  if (cycle === 5) return 1; // 5rb
-  if (cycle < 11) return 0; // zonk lagi
-  return 2; // 10rb
+  if (cycle < 5) return prizes.indexOf("Zonk");
+  if (cycle === 5) return prizes.indexOf("RP.5.000");
+  if (cycle < 11) return prizes.indexOf("Zonk");
+  return prizes.indexOf("RP.20.000"); // pengganti 10rb
 }
 
 function spin() {
@@ -104,7 +113,7 @@ function spin() {
   spinning = true;
   spinCount++;
 
-  let targetIndex = getResultIndex();
+  let targetIndex = getTargetIndex();
 
   let pointerAngle = (3 * Math.PI / 2);
   let targetAngle = pointerAngle - (targetIndex * arc) - arc/2;
