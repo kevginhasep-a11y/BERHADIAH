@@ -62,10 +62,10 @@ button {
   <canvas id="wheel" width="300" height="300"></canvas>
 </div>
 
-<button onclick="pay()">💰 Scan & Bayar</button>
-<button onclick="spin()" id="spinBtn" disabled>🎯 Spin</button>
+<!-- tombol spin langsung aktif -->
+<button onclick="spin()" id="spinBtn">🎯 Spin</button>
 
-<div id="status">Status: Belum bayar</div>
+<div id="status">Status: Siap dimainkan</div>
 <div id="result"></div>
 
 <script>
@@ -89,7 +89,6 @@ const radius = 150;
 
 let startAngle = 0;
 let spinning = false;
-let paid = false;
 
 // 🔥 counter pola
 let spinCount = 0;
@@ -116,20 +115,8 @@ function drawWheel() {
 
 drawWheel();
 
-function pay() {
-  if (paid) return;
-
-  document.getElementById("status").innerText = "Status: Memproses pembayaran...";
-
-  setTimeout(() => {
-    paid = true;
-    document.getElementById("spinBtn").disabled = false;
-    document.getElementById("status").innerText = "Status: Pembayaran berhasil ✅";
-  }, 800);
-}
-
 function spin() {
-  if (!paid || spinning) return;
+  if (spinning) return;
 
   spinning = true;
   document.getElementById("spinBtn").disabled = true;
@@ -138,7 +125,7 @@ function spin() {
 
   let targetIndex;
 
-  // 🔥 5x ZONK, 1x 5RB
+  // 🔥 pola 5 zonk 1 menang
   if (spinCount % 6 === 0) {
     targetIndex = prizes.indexOf("RP.5.000");
   } else {
@@ -172,8 +159,6 @@ function spin() {
       requestAnimationFrame(animate);
     } else {
       spinning = false;
-
-      // 🔥 aktifkan tombol lagi
       document.getElementById("spinBtn").disabled = false;
 
       document.getElementById("result").innerText =
