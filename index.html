@@ -1,16 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Spin Wheel</title>
+
+<style>
+body {
+  text-align: center;
+  font-family: Arial;
+  background: #222;
+  color: white;
+}
+
+.container {
+  position: relative;
+  width: 320px;
+  margin: 40px auto;
+}
+
+.arrow {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 30px;
+}
+
+canvas {
+  background: #fff;
+  border-radius: 50%;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#result {
+  margin-top: 20px;
+  font-size: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🎡 Spin & Win</h2>
+
+<div class="container">
+  <div class="arrow">⬇️</div>
+  <canvas id="wheel" width="300" height="300"></canvas>
+</div>
+
+<button onclick="pay()">💰 Bayar</button>
+<button onclick="spin()" id="spinBtn" disabled>🎯 Spin</button>
+
+<p id="status">Status: Belum bayar</p>
+<p id="result"></p>
+
 <script>
+// ====== JS KAMU (SUDAH DIPERBAIKI) ======
+
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 
-const prizes = [
-  "WAHYU",
-  "RP.20.000",
-  "RP.5.000",
-  "RP.30.000",
-  "RP.50.000",
-  "Zonk"
-];
-
+const prizes = ["WAHYU","RP.20.000","RP.5.000","RP.30.000","RP.50.000","Zonk"];
 const colors = ["red","blue","green","orange","purple","pink"];
 
 const cx = 150;
@@ -55,17 +111,10 @@ function pay() {
   }, 800);
 }
 
-// 🔥 SISTEM PELUANG (ZONK BESAR)
+// 🔥 peluang zonk besar
 function getWeightedPrizeIndex() {
   let random = Math.random();
-
-  if (random < 0.75) {
-    return prizes.indexOf("Zonk"); // 75% ZONK
-  } else {
-    // sisanya hadiah random
-    let hadiahIndex = Math.floor(Math.random() * (prizes.length - 1));
-    return hadiahIndex;
-  }
+  return random < 0.8 ? 5 : Math.floor(Math.random() * 5);
 }
 
 function spin() {
@@ -75,10 +124,7 @@ function spin() {
   paid = false;
   document.getElementById("spinBtn").disabled = true;
 
-  // 🔥 ambil hasil yang SUDAH DIATUR
   let targetIndex = getWeightedPrizeIndex();
-
-  // hitung sudut tujuan biar berhenti tepat di hadiah itu
   let targetAngle = (Math.PI * 2) - (targetIndex * arc) - arc / 2;
 
   let spinAngle = Math.random() * 2000 + 3000;
@@ -100,7 +146,6 @@ function spin() {
     if (progress < duration) {
       requestAnimationFrame(animate);
     } else {
-      // 🔥 paksa berhenti ke target
       startAngle = targetAngle;
 
       ctx.clearRect(0, 0, 300, 300);
@@ -118,3 +163,6 @@ function spin() {
   requestAnimationFrame(animate);
 }
 </script>
+
+</body>
+</html>
