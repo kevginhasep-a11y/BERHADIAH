@@ -84,7 +84,6 @@ const colors = ["red","blue","green","orange","purple","cyan","pink"];
 let startAngle = 0;
 let spinning = false;
 let paid = false;
-let spinCount = 0;
 
 const arc = Math.PI * 2 / prizes.length;
 
@@ -117,19 +116,50 @@ function pay() {
     document.getElementById("status").innerText = "Siap spin ✅";
   }, 800);
 }
+</script>
 
-function spin() {
+<!-- 🔥 FIREBASE CONNECT -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDLNaYLfUDmi4Pt4w8RWGrfQwb_Biebdfw",
+  authDomain: "berhadiahrupiah.firebaseapp.com",
+  databaseURL: "https://berhadiahrupiah-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "berhadiahrupiah",
+  storageBucket: "berhadiahrupiah.firebasestorage.app",
+  messagingSenderId: "639939931737",
+  appId: "1:639939931737:web:9ba3727ca210a582330b48"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// 🔥 ambil & simpan spin global
+async function getSpinCount() {
+  const snap = await get(ref(db, "spinCount"));
+  return snap.exists() ? snap.val() : 0;
+}
+
+async function setSpinCount(val) {
+  await set(ref(db, "spinCount"), val);
+}
+
+// 🔥 SPIN GLOBAL
+window.spin = async function () {
   if (!paid || spinning) return;
 
   spinning = true;
   document.getElementById("spinBtn").disabled = true;
 
+  let spinCount = await getSpinCount();
   spinCount++;
+  await setSpinCount(spinCount);
+
+  let cycle = (spinCount - 1) % 12;
 
   let targetIndex;
-
-  // 🔥 POLA 5 ZONK - 5RB - 5 ZONK - 10RB
-  let cycle = spinCount % 12;
 
   if (cycle < 5) {
     targetIndex = prizes.indexOf("Zonk");
@@ -152,11 +182,9 @@ function spin() {
 
   function animate(timestamp) {
     if (!start) start = timestamp;
+
     let progress = timestamp - start;
-
-    let t = progress / duration;
-    if (t > 1) t = 1;
-
+    let t = Math.min(progress / duration, 1);
     let ease = 1 - Math.pow(1 - t, 3);
 
     startAngle = initialAngle + totalRotation * ease;
@@ -167,8 +195,6 @@ function spin() {
     if (t < 1) {
       requestAnimationFrame(animate);
     } else {
-
-      // 🔥 FIX SPIN BERULANG
       startAngle = startAngle % (Math.PI * 2);
 
       spinning = false;
@@ -184,7 +210,7 @@ function spin() {
   }
 
   requestAnimationFrame(animate);
-}
+};
 </script>
 
 </body>
