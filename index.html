@@ -1,3 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Spin Wheel Akurat</title>
+
+<style>
+body {
+  text-align: center;
+  font-family: Arial;
+  background: #222;
+  color: white;
+}
+
+.container {
+  position: relative;
+  width: 320px;
+  margin: 40px auto;
+}
+
+.arrow {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 30px;
+}
+
+canvas {
+  background: #fff;
+  border-radius: 50%;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#status {
+  margin-top: 10px;
+  color: yellow;
+}
+
+#result {
+  margin-top: 20px;
+  font-size: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🎡 Spin & Win</h2>
+
+<div class="container">
+  <div class="arrow">⬇️</div>
+  <canvas id="wheel" width="300" height="300"></canvas>
+</div>
+
+<button onclick="pay()">💰 Scan & Bayar</button>
+<button onclick="spin()" id="spinBtn" disabled>🎯 Spin</button>
+
+<div id="status">Status: Belum bayar</div>
+<div id="result"></div>
+
 <script>
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
@@ -24,6 +91,7 @@ function drawWheel() {
     ctx.translate(150,150);
     ctx.rotate(startAngle+i*arc+arc/2);
     ctx.fillStyle="#fff";
+    ctx.font = "12px Arial";
     ctx.fillText(prizes[i],40,0);
     ctx.restore();
   }
@@ -33,7 +101,7 @@ drawWheel();
 
 function pay() {
   document.getElementById("status").innerText = "Memproses...";
-  
+
   setTimeout(() => {
     paid = true;
     document.getElementById("spinBtn").disabled = false;
@@ -49,9 +117,12 @@ function spin() {
 
   spinCount++;
 
-  let targetIndex = (spinCount % 6 === 0)
-    ? prizes.indexOf("RP.5.000")
-    : prizes.indexOf("Zonk");
+  let targetIndex;
+  if (spinCount % 6 === 0) {
+    targetIndex = prizes.indexOf("RP.5.000");
+  } else {
+    targetIndex = prizes.indexOf("Zonk");
+  }
 
   let pointerAngle = (3 * Math.PI / 2);
   let targetAngle = pointerAngle - (targetIndex * arc) - (arc / 2);
@@ -71,7 +142,7 @@ function spin() {
 
     let ease = 1 - Math.pow(1 - t, 3);
 
-    startAngle = initialAngle + (totalRotation * ease);
+    startAngle = initialAngle + totalRotation * ease;
 
     ctx.clearRect(0,0,300,300);
     drawWheel();
@@ -79,8 +150,7 @@ function spin() {
     if (t < 1) {
       requestAnimationFrame(animate);
     } else {
-
-      // 🔥 FIX PENTING
+      // 🔥 FIX ANTI ERROR + ANTI MACET
       startAngle = startAngle % (Math.PI * 2);
 
       spinning = false;
@@ -98,3 +168,6 @@ function spin() {
   requestAnimationFrame(animate);
 }
 </script>
+
+</body>
+</html>
