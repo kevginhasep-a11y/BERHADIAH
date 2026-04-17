@@ -125,12 +125,6 @@ function pay() {
   }, 800);
 }
 
-// 🔥 peluang zonk besar
-function getWeightedPrizeIndex() {
-  let random = Math.random();
-  return random < 0.8 ? 5 : Math.floor(Math.random() * 5);
-}
-
 function spin() {
   if (!paid || spinning) return;
 
@@ -138,32 +132,26 @@ function spin() {
   paid = false;
   document.getElementById("spinBtn").disabled = true;
 
-  let targetIndex = getWeightedPrizeIndex();
+  // 🔥 SELALU ZONK
+  let targetIndex = prizes.indexOf("Zonk");
 
-  // 🔥 FIX AKURAT PANAH (posisi atas)
+  // posisi panah atas
   let pointerAngle = (3 * Math.PI / 2);
   let targetAngle = pointerAngle - (targetIndex * arc) - (arc / 2);
 
-  let spinAngle = Math.random() * 2000 + 3000;
-  let duration = 4000;
-  let start = null;
+  let rotation = 0;
+  let speed = 0.3;
 
-  function animate(timestamp) {
-    if (!start) start = timestamp;
-    let progress = timestamp - start;
-
-    let ease = 1 - progress / duration;
-    let rotation = spinAngle * ease;
-
-    startAngle += (rotation * Math.PI / 180) * 0.05;
+  let anim = setInterval(() => {
+    rotation += speed;
+    startAngle += speed;
 
     ctx.clearRect(0, 0, 300, 300);
     drawWheel();
 
-    if (progress < duration) {
-      requestAnimationFrame(animate);
-    } else {
-      // 🔥 pastikan sudut fix & presisi
+    if (rotation >= 4) {
+      clearInterval(anim);
+
       startAngle = targetAngle % (Math.PI * 2);
 
       ctx.clearRect(0, 0, 300, 300);
@@ -172,13 +160,11 @@ function spin() {
       spinning = false;
 
       document.getElementById("result").innerText =
-        "🎁 Kamu dapat: " + prizes[targetIndex];
+        "🎁 Kamu dapat: Zonk";
 
       document.getElementById("status").innerText = "Status: Selesai";
     }
-  }
-
-  requestAnimationFrame(animate);
+  }, 20);
 }
 </script>
 
