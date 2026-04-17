@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Spin Wheel Akurat</title>
+
+<style>
+  body {
+    text-align: center;
+    font-family: Arial;
+    background: #222;
+    color: white;
+  }
+
+  .container {
+    position: relative;
+    width: 320px;
+    margin: 40px auto;
+  }
+
+  .arrow {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 30px;
+    z-index: 10;
+  }
+
+  canvas {
+    background: #fff;
+    border-radius: 50%;
+  }
+
+  button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  #status {
+    margin-top: 10px;
+    color: yellow;
+  }
+
+  #result {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+</style>
+
+</head>
+
+<body>
+
+<h2>🎡 Spin & Win</h2>
+
+<div class="container">
+  <div class="arrow">⬇️</div>
+  <canvas id="wheel" width="300" height="300"></canvas>
+</div>
+
+<button onclick="pay()">💰 Scan & Bayar</button> <button onclick="spin()" id="spinBtn" disabled>🎯 Spin</button>
+
+<div id="status">Status: Belum bayar</div>
+<div id="result"></div>
+
+<script>
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+
+const prizes = [
+  "Diskon 10%",
+  "Gratis Minuman",
+  "Coba Lagi",
+  "Diskon 20%",
+  "Hadiah Spesial",
+  "Zonk"
+];
+
+const colors = ["red","blue","green","orange","purple","pink"];
+
+const cx = 150;
+const cy = 150;
+const radius = 150;
+
+let startAngle = 0;
+let spinning = false;
+let paid = false;
+
+const arc = Math.PI * 2 / prizes.length;
+
+function drawWheel() {
+  for (let i = 0; i < prizes.length; i++) {
+    ctx.beginPath();
+    ctx.fillStyle = colors[i];
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, startAngle + i * arc, startAngle + (i + 1) * arc);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(startAngle + i * arc + arc / 2);
+    ctx.fillStyle = "#fff";
+    ctx.font = "12px Arial";
+    ctx.fillText(prizes[i], 40, 0);
+    ctx.restore();
+  }
+}
+
+drawWheel();
+
+function pay() {
+  if (paid) return;
+
+  document.getElementById("status").innerText = "Status: Memproses pembayaran...";
+
+  setTimeout(() => {
+    paid = true;
+    document.getElementById("spinBtn").disabled = false;
+    document.getElementById("status").innerText = "Status: Pembayaran berhasil ✅";
+  }, 800);
+}
+
+function spin() {
+  if (!paid || spinning) return;
+
+  spinning = true;
+  paid = false;
+  document.getElementById("spinBtn").disabled = true;
+
+  let spinAngle = Math.random() * 2000 + 2000;
+  let duration = 4000;
+  let start = null;
+
+  let finalRotation = 0;
+
+  function animate(timestamp) {
+    if (!start) start = timestamp;
+    let progress = timestamp - start;
+
+    let eased = spinAngle * (1 - progress / duration);
+
+    startAngle += (eased * Math.PI / 180) * 0.05;
+
+    ctx.clearRect(0, 0, 300, 300);
+    drawWheel();
+
+    if (progress < duration) {
+      requestAnimationFrame(animate);
+    } else {
+      spinning = false;
+
+      // 🔥 FIX AKURAT: hitung posisi panah (atas = -90deg)
+      let normalized = startAngle % (Math.PI * 2);
+      if (normalized < 0) normalized += Math.PI * 2;
+
+      // karena panah di atas
+      let pointerAngle = (3 * Math.PI / 2);
+
+      let relative = (pointerAngle - normalized + Math.PI * 2) % (Math.PI * 2);
+
+      let index = Math.floor(relative / arc);
+
+      document.getElementById("result").innerText =
+        "🎁 Kamu dapat: " + prizes[index];
+
+      document.getElementById("status").innerText = "Status: Selesai";
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+</script>
+
+</body>
+</html>
