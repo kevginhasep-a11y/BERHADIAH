@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Spin Wheel Akurat</title>
+<title>Spin Wheel Pola</title>
 
 <style>
 body {
@@ -35,18 +35,10 @@ button {
   padding: 10px 20px;
   margin: 10px;
   font-size: 16px;
-  cursor: pointer;
 }
 
-#status {
-  margin-top: 10px;
-  color: yellow;
-}
-
-#result {
-  margin-top: 20px;
-  font-size: 20px;
-}
+#status { color: yellow; }
+#result { margin-top: 15px; font-size: 20px; }
 </style>
 </head>
 
@@ -59,22 +51,20 @@ button {
   <canvas id="wheel" width="300" height="300"></canvas>
 </div>
 
-<button onclick="pay()">💰 Scan & Bayar</button>
-<button onclick="spin()" id="spinBtn" disabled>🎯 Spin</button>
+<button onclick="spin()">🎯 Spin</button>
 
-<div id="status">Status: Belum bayar</div>
+<div id="status">Status: Siap</div>
 <div id="result"></div>
 
 <script>
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 
-const prizes = ["WAHYU","RP.20.000","RP.5.000","RP.30.000","RP.50.000","Zonk"];
-const colors = ["red","blue","green","orange","purple","pink"];
+const prizes = ["Zonk","RP.5.000","RP.10.000"];
+const colors = ["red","green","blue"];
 
 let startAngle = 0;
 let spinning = false;
-let paid = false;
 let spinCount = 0;
 
 const arc = Math.PI * 2 / prizes.length;
@@ -91,7 +81,7 @@ function drawWheel() {
     ctx.translate(150,150);
     ctx.rotate(startAngle+i*arc+arc/2);
     ctx.fillStyle="#fff";
-    ctx.font = "12px Arial";
+    ctx.font="14px Arial";
     ctx.fillText(prizes[i],40,0);
     ctx.restore();
   }
@@ -99,69 +89,54 @@ function drawWheel() {
 
 drawWheel();
 
-function pay() {
-  document.getElementById("status").innerText = "Memproses...";
+function getResultIndex() {
+  let cycle = spinCount % 12;
 
-  setTimeout(() => {
-    paid = true;
-    document.getElementById("spinBtn").disabled = false;
-    document.getElementById("status").innerText = "Siap spin ✅";
-  }, 800);
+  if (cycle < 5) return 0; // zonk
+  if (cycle === 5) return 1; // 5rb
+  if (cycle < 11) return 0; // zonk lagi
+  return 2; // 10rb
 }
 
 function spin() {
-  if (!paid || spinning) return;
+  if (spinning) return;
 
   spinning = true;
-  document.getElementById("spinBtn").disabled = true;
-
   spinCount++;
 
-  let targetIndex;
-  if (spinCount % 6 === 0) {
-    targetIndex = prizes.indexOf("RP.5.000");
-  } else {
-    targetIndex = prizes.indexOf("Zonk");
-  }
+  let targetIndex = getResultIndex();
 
   let pointerAngle = (3 * Math.PI / 2);
-  let targetAngle = pointerAngle - (targetIndex * arc) - (arc / 2);
+  let targetAngle = pointerAngle - (targetIndex * arc) - arc/2;
 
-  let duration = 5000;
+  let duration = 4000;
   let start = null;
 
   let initialAngle = startAngle;
-  let totalRotation = (12 * Math.PI) + (targetAngle - initialAngle);
+  let totalRotation = (10 * Math.PI) + (targetAngle - initialAngle);
 
-  function animate(timestamp) {
-    if (!start) start = timestamp;
-    let progress = timestamp - start;
+  function animate(t) {
+    if (!start) start = t;
+    let progress = t - start;
 
-    let t = progress / duration;
-    if (t > 1) t = 1;
+    let p = progress / duration;
+    if (p > 1) p = 1;
 
-    let ease = 1 - Math.pow(1 - t, 3);
+    let ease = 1 - Math.pow(1 - p, 3);
 
     startAngle = initialAngle + totalRotation * ease;
 
     ctx.clearRect(0,0,300,300);
     drawWheel();
 
-    if (t < 1) {
+    if (p < 1) {
       requestAnimationFrame(animate);
     } else {
-      // 🔥 FIX ANTI ERROR + ANTI MACET
       startAngle = startAngle % (Math.PI * 2);
-
       spinning = false;
-      paid = false;
-
-      document.getElementById("spinBtn").disabled = true;
 
       document.getElementById("result").innerText =
         "🎁 Kamu dapat: " + prizes[targetIndex];
-
-      document.getElementById("status").innerText = "Harus bayar lagi";
     }
   }
 
