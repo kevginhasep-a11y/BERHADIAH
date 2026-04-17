@@ -132,37 +132,37 @@ function spin() {
   paid = false;
   document.getElementById("spinBtn").disabled = true;
 
+  // 🔥 target selalu ZONK
   let targetIndex = prizes.indexOf("Zonk");
 
   let pointerAngle = (3 * Math.PI / 2);
   let targetAngle = pointerAngle - (targetIndex * arc) - (arc / 2);
 
-  let duration = 5000; // 🔥 lama putaran (5 detik)
+  let duration = 5000;
   let start = null;
+
+  let initialAngle = startAngle;
+
+  // 🔥 ini kunci biar tidak loncat
+  let totalRotation = (12 * Math.PI) + (targetAngle - initialAngle);
 
   function animate(timestamp) {
     if (!start) start = timestamp;
     let progress = timestamp - start;
 
-    // 🔥 efek melambat (smooth)
-    let ease = 1 - Math.pow(1 - progress / duration, 3);
+    let t = progress / duration;
+    if (t > 1) t = 1;
 
-    // 🔥 jumlah putaran (semakin besar makin lama muter)
-    let totalRotation = 12 * Math.PI;
+    let ease = 1 - Math.pow(1 - t, 3);
 
-    startAngle = ease * totalRotation;
+    startAngle = initialAngle + (totalRotation * ease);
 
     ctx.clearRect(0, 0, 300, 300);
     drawWheel();
 
-    if (progress < duration) {
+    if (t < 1) {
       requestAnimationFrame(animate);
     } else {
-      startAngle = targetAngle % (Math.PI * 2);
-
-      ctx.clearRect(0, 0, 300, 300);
-      drawWheel();
-
       spinning = false;
 
       document.getElementById("result").innerText =
