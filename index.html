@@ -132,7 +132,6 @@ function spin() {
   if (!paid || spinning) return;
 
   spinning = true;
-  paid = false;
   document.getElementById("spinBtn").disabled = true;
 
   spinCount++;
@@ -153,7 +152,6 @@ function spin() {
   let start = null;
 
   let initialAngle = startAngle;
-
   let totalRotation = (12 * Math.PI) + (targetAngle - initialAngle);
 
   function animate(timestamp) {
@@ -174,6 +172,9 @@ function spin() {
       requestAnimationFrame(animate);
     } else {
       spinning = false;
+
+      // 🔥 aktifkan tombol lagi
+      document.getElementById("spinBtn").disabled = false;
 
       document.getElementById("result").innerText =
         "🎁 Kamu dapat: " + prizes[targetIndex];
