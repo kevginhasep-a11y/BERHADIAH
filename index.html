@@ -91,6 +91,9 @@ let startAngle = 0;
 let spinning = false;
 let paid = false;
 
+// 🔥 counter pola
+let spinCount = 0;
+
 const arc = Math.PI * 2 / prizes.length;
 
 function drawWheel() {
@@ -132,8 +135,16 @@ function spin() {
   paid = false;
   document.getElementById("spinBtn").disabled = true;
 
-  // 🔥 target selalu ZONK
-  let targetIndex = prizes.indexOf("Zonk");
+  spinCount++;
+
+  let targetIndex;
+
+  // 🔥 5x ZONK, 1x 5RB
+  if (spinCount % 6 === 0) {
+    targetIndex = prizes.indexOf("RP.5.000");
+  } else {
+    targetIndex = prizes.indexOf("Zonk");
+  }
 
   let pointerAngle = (3 * Math.PI / 2);
   let targetAngle = pointerAngle - (targetIndex * arc) - (arc / 2);
@@ -143,7 +154,6 @@ function spin() {
 
   let initialAngle = startAngle;
 
-  // 🔥 ini kunci biar tidak loncat
   let totalRotation = (12 * Math.PI) + (targetAngle - initialAngle);
 
   function animate(timestamp) {
@@ -166,7 +176,7 @@ function spin() {
       spinning = false;
 
       document.getElementById("result").innerText =
-        "🎁 Kamu dapat: Zonk";
+        "🎁 Kamu dapat: " + prizes[targetIndex];
 
       document.getElementById("status").innerText = "Status: Selesai";
     }
