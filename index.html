@@ -24,7 +24,6 @@ body {
   left: 50%;
   transform: translateX(-50%);
   font-size: 30px;
-  z-index: 10;
 }
 
 canvas {
@@ -47,10 +46,8 @@ button {
 #result {
   margin-top: 20px;
   font-size: 20px;
-  font-weight: bold;
 }
 </style>
-
 </head>
 
 <body>
@@ -62,35 +59,23 @@ button {
   <canvas id="wheel" width="300" height="300"></canvas>
 </div>
 
-<!-- tombol spin langsung aktif -->
-<button onclick="spin()" id="spinBtn">🎯 Spin</button>
+<!-- ✅ tombol bayar kembali -->
+<button onclick="pay()">💰 Scan & Bayar</button>
+<button onclick="spin()" id="spinBtn" disabled>🎯 Spin</button>
 
-<div id="status">Status: Siap dimainkan</div>
+<div id="status">Status: Belum bayar</div>
 <div id="result"></div>
 
 <script>
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 
-const prizes = [
-  "WAHYU",
-  "RP.20.000",
-  "RP.5.000",
-  "RP.30.000",
-  "RP.50.000",
-  "Zonk"
-];
-
+const prizes = ["WAHYU","RP.20.000","RP.5.000","RP.30.000","RP.50.000","Zonk"];
 const colors = ["red","blue","green","orange","purple","pink"];
-
-const cx = 150;
-const cy = 150;
-const radius = 150;
 
 let startAngle = 0;
 let spinning = false;
-
-// 🔥 counter pola
+let paid = false;
 let spinCount = 0;
 
 const arc = Math.PI * 2 / prizes.length;
@@ -99,38 +84,42 @@ function drawWheel() {
   for (let i = 0; i < prizes.length; i++) {
     ctx.beginPath();
     ctx.fillStyle = colors[i];
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, radius, startAngle + i * arc, startAngle + (i + 1) * arc);
+    ctx.moveTo(150,150);
+    ctx.arc(150,150,150,startAngle+i*arc,startAngle+(i+1)*arc);
     ctx.fill();
 
     ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(startAngle + i * arc + arc / 2);
-    ctx.fillStyle = "#fff";
-    ctx.font = "12px Arial";
-    ctx.fillText(prizes[i], 40, 0);
+    ctx.translate(150,150);
+    ctx.rotate(startAngle+i*arc+arc/2);
+    ctx.fillStyle="#fff";
+    ctx.fillText(prizes[i],40,0);
     ctx.restore();
   }
 }
 
 drawWheel();
 
+function pay() {
+  document.getElementById("status").innerText = "Memproses...";
+  
+  setTimeout(() => {
+    paid = true;
+    document.getElementById("spinBtn").disabled = false;
+    document.getElementById("status").innerText = "Siap spin ✅";
+  }, 800);
+}
+
 function spin() {
-  if (spinning) return;
+  if (!paid || spinning) return;
 
   spinning = true;
   document.getElementById("spinBtn").disabled = true;
 
   spinCount++;
 
-  let targetIndex;
-
-  // 🔥 pola 5 zonk 1 menang
-  if (spinCount % 6 === 0) {
-    targetIndex = prizes.indexOf("RP.5.000");
-  } else {
-    targetIndex = prizes.indexOf("Zonk");
-  }
+  let targetIndex = (spinCount % 6 === 0)
+    ? prizes.indexOf("RP.5.000")
+    : prizes.indexOf("Zonk");
 
   let pointerAngle = (3 * Math.PI / 2);
   let targetAngle = pointerAngle - (targetIndex * arc) - (arc / 2);
@@ -152,19 +141,22 @@ function spin() {
 
     startAngle = initialAngle + (totalRotation * ease);
 
-    ctx.clearRect(0, 0, 300, 300);
+    ctx.clearRect(0,0,300,300);
     drawWheel();
 
     if (t < 1) {
       requestAnimationFrame(animate);
     } else {
       spinning = false;
-      document.getElementById("spinBtn").disabled = false;
+
+      // 🔥 reset supaya bisa spin lagi
+      paid = false;
+      document.getElementById("spinBtn").disabled = true;
 
       document.getElementById("result").innerText =
         "🎁 Kamu dapat: " + prizes[targetIndex];
 
-      document.getElementById("status").innerText = "Status: Selesai";
+      document.getElementById("status").innerText = "Harus bayar lagi";
     }
   }
 
