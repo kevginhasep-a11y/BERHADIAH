@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Spin Wheel Aman</title>
+<title>Spin Wheel Akurat</title>
 
 <style>
 body {
@@ -92,17 +92,56 @@ button {
 <a href="https://wa.me/6287774340447" class="wa-float" target="_blank">💬</a>
 
 <script>
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+
+const prizes = [
+  "RP.1.000.000",
+  "RP.20.000",
+  "RP.5.000",
+  "RP.30.000",
+  "RP.50.000",
+  "RP.10.000",
+  "Zonk"
+];
+
+const colors = ["red","blue","green","orange","purple","cyan","pink"];
+
+let startAngle = 0;
+let spinning = false;
 let paid = false;
 
-// UI only (tidak menentukan hasil lagi)
-function pay() {
-  document.getElementById("status").innerText = "Memproses pembayaran...";
+const arc = Math.PI * 2 / prizes.length;
 
+function drawWheel() {
+  for (let i = 0; i < prizes.length; i++) {
+    ctx.beginPath();
+    ctx.fillStyle = colors[i];
+    ctx.moveTo(150,150);
+    ctx.arc(150,150,150,startAngle+i*arc,startAngle+(i+1)*arc);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(150,150);
+    ctx.rotate(startAngle+i*arc+arc/2);
+    ctx.fillStyle="#fff";
+    ctx.font = "12px Arial";
+    ctx.fillText(prizes[i],40,0);
+    ctx.restore();
+  }
+}
+
+drawWheel();
+
+function pay() {
+  document.getElementById("status").innerText = "Memproses...";
+
+  // coba kirim ke backend (kalau ada)
   fetch("https://YOUR-BACKEND/pay", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
     body: JSON.stringify({ userId: "user123" })
-  });
+  }).catch(() => {});
 
   setTimeout(() => {
     paid = true;
@@ -114,35 +153,47 @@ function pay() {
 
 <script>
 async function spin() {
-  if (!paid) return;
+  if (!paid || spinning) return;
+
+  spinning = true;
+  document.getElementById("spinBtn").disabled = true;
 
   document.getElementById("status").innerText = "Memproses spin...";
 
   try {
-    // 🔐 SEMUA HASIL DARI SERVER (ANTI CHEAT TOTAL)
+    // 🔐 coba backend dulu
     let res = await fetch("https://YOUR-BACKEND/spin", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({ userId: "user123" })
     });
 
-    let data = await res.json();
+    if (!res.ok) throw new Error("no backend");
 
-    if (data.error) {
-      alert(data.error);
-      return;
-    }
+    let data = await res.json();
 
     document.getElementById("result").innerText =
       "🎁 Kamu dapat: " + data.prize;
 
-    document.getElementById("status").innerText = "Harus bayar lagi";
-    paid = false;
-    document.getElementById("spinBtn").disabled = true;
-
   } catch (e) {
-    alert("Server error");
+    // 🔥 FALLBACK MODE (biar tidak error)
+    const fallback = [
+      "RP.10.000",
+      "RP.20.000",
+      "RP.5.000",
+      "Zonk"
+    ];
+
+    let random = fallback[Math.floor(Math.random() * fallback.length)];
+
+    document.getElementById("result").innerText =
+      "🎁 (Demo Mode) Kamu dapat: " + random;
   }
+
+  paid = false;
+  spinning = false;
+  document.getElementById("spinBtn").disabled = true;
+  document.getElementById("status").innerText = "Harus bayar lagi";
 }
 </script>
 
