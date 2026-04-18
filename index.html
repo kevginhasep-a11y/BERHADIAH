@@ -55,7 +55,7 @@ button {
   font-size: 20px;
 }
 
-/* WhatsApp */
+/* 🔥 WhatsApp Floating */
 .wa-float {
   position: fixed;
   right: 20px;
@@ -66,7 +66,12 @@ button {
   padding: 15px 18px;
   border-radius: 50%;
   text-decoration: none;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
   z-index: 999;
+}
+
+.wa-float:hover {
+  background: #1ebe5d;
 }
 </style>
 </head>
@@ -87,9 +92,6 @@ button {
 
 <div id="status">Status: Belum bayar</div>
 <div id="result"></div>
-
-<!-- WhatsApp -->
-<a href="https://wa.me/6287774340447" class="wa-float" target="_blank">💬</a>
 
 <script>
 const canvas = document.getElementById("wheel");
@@ -136,13 +138,6 @@ drawWheel();
 function pay() {
   document.getElementById("status").innerText = "Memproses...";
 
-  // coba kirim ke backend (kalau ada)
-  fetch("https://YOUR-BACKEND/pay", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ userId: "user123" })
-  }).catch(() => {});
-
   setTimeout(() => {
     paid = true;
     document.getElementById("spinBtn").disabled = false;
@@ -151,51 +146,105 @@ function pay() {
 }
 </script>
 
-<script>
-async function spin() {
+<!-- 🔥 FIREBASE (SECURED VERSION) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDLNaYLfUDmi4Pt4w8RWGrfQwb_Biebdfw",
+  authDomain: "berhadiahrupiah.firebaseapp.com",
+  databaseURL: "https://berhadiahrupiah-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "berhadiahrupiah",
+  storageBucket: "berhadiahrupiah.firebasestorage.app",
+  messagingSenderId: "639939931737",
+  appId: "1:639939931737:web:9ba3727ca210a582330b48"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.spin = async function () {
   if (!paid || spinning) return;
 
   spinning = true;
   document.getElementById("spinBtn").disabled = true;
 
-  document.getElementById("status").innerText = "Memproses spin...";
-
   try {
-    // 🔐 coba backend dulu
-    let res = await fetch("https://YOUR-BACKEND/spin", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ userId: "user123" })
+    // 🔒 ANTI HACK: atomic increment
+    const spinRef = ref(db, "spinCount");
+
+    const result = await runTransaction(spinRef, (current) => {
+      return (current || 0) + 1;
     });
 
-    if (!res.ok) throw new Error("no backend");
+    let spinCount = result.snapshot.val();
 
-    let data = await res.json();
+    let cycle = (spinCount - 1) % 12;
 
-    document.getElementById("result").innerText =
-      "🎁 Kamu dapat: " + data.prize;
+    let targetIndex;
+
+    if (cycle < 5) {
+      targetIndex = prizes.indexOf("Zonk");
+    } else if (cycle === 5) {
+      targetIndex = prizes.indexOf("RP.5.000");
+    } else if (cycle < 11) {
+      targetIndex = prizes.indexOf("Zonk");
+    } else {
+      targetIndex = prizes.indexOf("RP.10.000");
+    }
+
+    let pointerAngle = (3 * Math.PI / 2);
+    let targetAngle = pointerAngle - (targetIndex * arc) - (arc / 2);
+
+    let duration = 5000;
+    let start = null;
+
+    let initialAngle = startAngle;
+    let totalRotation = (12 * Math.PI) + (targetAngle - initialAngle);
+
+    function animate(timestamp) {
+      if (!start) start = timestamp;
+
+      let progress = timestamp - start;
+      let t = Math.min(progress / duration, 1);
+      let ease = 1 - Math.pow(1 - t, 3);
+
+      startAngle = initialAngle + totalRotation * ease;
+
+      ctx.clearRect(0,0,300,300);
+      drawWheel();
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        startAngle = startAngle % (Math.PI * 2);
+
+        spinning = false;
+        paid = false;
+
+        document.getElementById("spinBtn").disabled = true;
+
+        document.getElementById("result").innerText =
+          "🎁 Kamu dapat: " + prizes[targetIndex];
+
+        document.getElementById("status").innerText = "Harus bayar lagi";
+      }
+    }
+
+    requestAnimationFrame(animate);
 
   } catch (e) {
-    // 🔥 FALLBACK MODE (biar tidak error)
-    const fallback = [
-      "RP.10.000",
-      "RP.20.000",
-      "RP.5.000",
-      "Zonk"
-    ];
-
-    let random = fallback[Math.floor(Math.random() * fallback.length)];
-
-    document.getElementById("result").innerText =
-      "🎁 (Demo Mode) Kamu dapat: " + random;
+    alert("Terjadi kesalahan, coba lagi");
+    spinning = false;
   }
-
-  paid = false;
-  spinning = false;
-  document.getElementById("spinBtn").disabled = true;
-  document.getElementById("status").innerText = "Harus bayar lagi";
-}
+};
 </script>
+
+<!-- 🔥 WhatsApp Floating Button -->
+<a href="https://wa.me/6287774340447" class="wa-float" target="_blank">
+  💬
+</a>
 
 </body>
 </html>
